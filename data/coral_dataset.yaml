@@ -1,5 +1,6 @@
-train: data/images/train
-val: data/images/val
-nc: 1
 names:
-  0: coral
+- coral
+nc: 1
+path: /home/runner/workspace/data
+train: images/train
+val: images/val

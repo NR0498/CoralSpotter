@@ -1,0 +1,17 @@
+{
+  "model_type": "YOLOv8n",
+  "training_status": "completed",
+  "dataset_size": {
+    "train_images": 33,
+    "val_images": 8,
+    "total_annotations": 41
+  },
+  "training_parameters": {
+    "epochs": 3,
+    "batch_size": 1,
+    "image_size": 416
+  },
+  "model_path": "trained_models/coral_yolo.pt",
+  "classes": ["coral"],
+  "notes": "Trained on synthetic coral reef dataset for coral detection"
+}

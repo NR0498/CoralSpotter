@@ -81,5 +81,8 @@ class SimpleCoralDetector:
                 bbox = detection['bbox']
                 self.xyxy = [np.array([bbox[0], bbox[1], bbox[2], bbox[3]])]
                 self.conf = [np.array([detection['confidence']])]
+                
+            def cpu(self):
+                return self
         
         return [MockResult(detections)]
