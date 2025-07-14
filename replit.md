@@ -6,7 +6,13 @@ This is a computer vision application that combines YOLO object detection with d
 
 ## User Preferences
 
-Preferred communication style: Simple, everyday language.
+- **Communication style**: Simple, everyday language
+- **Interface requirements**: Dark mode interface (implemented)
+- **Dataset requirements**: Separate datasets for YOLO detection and coral classification with real images
+- **Training requirements**: Proper YOLO model training with robust implementation
+- **Visualization requirements**: Enhanced bounding boxes and overlays on test images
+- **Functionality requirements**: Image upload capability to expand training datasets
+- **Deployment requirements**: Ready for production deployment
 
 ## System Architecture
 

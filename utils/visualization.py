@@ -23,58 +23,105 @@ class VisualizationUtils:
         return self.colors[class_id % len(self.colors)]
 
 def draw_detections(image, detections, show_confidence=True, show_labels=True):
-    """Draw detection bounding boxes on image"""
+    """Draw enhanced detection bounding boxes on image with proper coral type visualization"""
     # Create a copy of the image
     result_image = image.copy()
     
+    # Coral type color mapping
+    coral_colors = {
+        'brain_coral': (0, 255, 255),      # Cyan
+        'staghorn_coral': (255, 165, 0),   # Orange
+        'table_coral': (0, 255, 0),        # Green
+        'soft_coral': (255, 192, 203),     # Pink
+        'fan_coral': (138, 43, 226),       # Blue Violet
+        'mushroom_coral': (255, 255, 0),   # Yellow
+        'coral': (0, 255, 0),              # Default green
+        'unknown': (255, 0, 0)             # Red for unknown
+    }
+    
     for i, detection in enumerate(detections):
-        bbox = detection['bbox']
-        confidence = detection['confidence']
-        coral_type = detection.get('coral_type', 'Coral')
+        bbox = detection.get('bbox', [])
+        if len(bbox) != 4:
+            continue
+            
+        confidence = detection.get('detection_confidence', detection.get('confidence', 0))
+        coral_type = detection.get('coral_type', 'coral')
         classification_confidence = detection.get('classification_confidence', 0.0)
         
-        x1, y1, x2, y2 = bbox
+        x1, y1, x2, y2 = [int(coord) for coord in bbox]
         
-        # Choose color based on detection index
-        color = (0, 255, 0) if coral_type else (255, 0, 0)  # Green if classified, red if not
-        thickness = 2
+        # Choose color based on coral type
+        color = coral_colors.get(coral_type.lower(), coral_colors['unknown'])
+        thickness = 3
         
-        # Draw bounding box
+        # Draw main bounding box
         cv2.rectangle(result_image, (x1, y1), (x2, y2), color, thickness)
         
-        # Prepare label text
+        # Draw corner markers for better visibility
+        corner_length = 15
+        cv2.line(result_image, (x1, y1), (x1 + corner_length, y1), color, thickness + 1)
+        cv2.line(result_image, (x1, y1), (x1, y1 + corner_length), color, thickness + 1)
+        cv2.line(result_image, (x2, y1), (x2 - corner_length, y1), color, thickness + 1)
+        cv2.line(result_image, (x2, y1), (x2, y1 + corner_length), color, thickness + 1)
+        cv2.line(result_image, (x1, y2), (x1 + corner_length, y2), color, thickness + 1)
+        cv2.line(result_image, (x1, y2), (x1, y2 - corner_length), color, thickness + 1)
+        cv2.line(result_image, (x2, y2), (x2 - corner_length, y2), color, thickness + 1)
+        cv2.line(result_image, (x2, y2), (x2, y2 - corner_length), color, thickness + 1)
+        
+        # Prepare enhanced label text
         label_parts = []
-        if show_labels and coral_type:
-            label_parts.append(coral_type)
+        if show_labels and coral_type and coral_type != 'coral':
+            formatted_type = coral_type.replace('_', ' ').title()
+            label_parts.append(formatted_type)
+        elif coral_type == 'coral':
+            label_parts.append('Coral Region')
         
         if show_confidence:
-            label_parts.append(f"{confidence:.2%}")
-            if coral_type and classification_confidence > 0:
-                label_parts.append(f"({classification_confidence:.2%})")
+            if confidence > 0:
+                label_parts.append(f"Det: {confidence:.1%}")
+            if classification_confidence > 0:
+                label_parts.append(f"Class: {classification_confidence:.1%}")
         
-        label_text = " ".join(label_parts)
+        label_text = " | ".join(label_parts)
         
         if label_text:
-            # Calculate text size
+            # Enhanced text rendering
             font = cv2.FONT_HERSHEY_SIMPLEX
-            font_scale = 0.6
-            font_thickness = 1
+            font_scale = 0.7
+            font_thickness = 2
             
             (text_width, text_height), baseline = cv2.getTextSize(
                 label_text, font, font_scale, font_thickness
             )
             
-            # Draw background rectangle for text
-            label_y = y1 - 10 if y1 - 10 > text_height else y1 + text_height + 10
+            # Position label above box, or below if too close to top
+            label_y = y1 - 15 if y1 - 15 > text_height + 10 else y2 + text_height + 15
+            
+            # Draw label background with slight transparency effect
+            overlay = result_image.copy()
             cv2.rectangle(
-                result_image,
-                (x1, label_y - text_height - 5),
-                (x1 + text_width + 5, label_y + 5),
+                overlay,
+                (x1 - 2, label_y - text_height - 8),
+                (x1 + text_width + 8, label_y + 8),
                 color,
                 -1
             )
+            # Blend overlay for transparency
+            alpha = 0.8
+            result_image = cv2.addWeighted(overlay, alpha, result_image, 1 - alpha, 0)
             
-            # Draw text
+            # Draw black outline for text
+            cv2.putText(
+                result_image,
+                label_text,
+                (x1 + 2, label_y - 2),
+                font,
+                font_scale,
+                (0, 0, 0),  # Black outline
+                font_thickness + 1
+            )
+            
+            # Draw main text
             cv2.putText(
                 result_image,
                 label_text,
