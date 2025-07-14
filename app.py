@@ -111,8 +111,8 @@ def train_classification_model():
     """Train classification model for coral species"""
     with st.spinner("Training coral classification model..."):
         try:
-            from models.coral_classifier import CoralClassifier
-            classifier = CoralClassifier()
+            from models.simple_classifier import SimpleCoralClassifier
+            classifier = SimpleCoralClassifier()
             
             # Check if classification data exists
             if not os.path.exists("data/coral_types") or len(os.listdir("data/coral_types")) == 0:
@@ -123,6 +123,7 @@ def train_classification_model():
             if success:
                 st.success("Coral classification model trained successfully!")
                 st.balloons()
+                st.info("Model uses Random Forest classifier with computer vision features")
             else:
                 st.error(f"Training failed: {message}")
         except Exception as e:
@@ -131,7 +132,7 @@ def train_classification_model():
 def check_model_status():
     """Check if models are trained and available"""
     yolo_path = "trained_models/coral_yolo.pt"
-    classifier_path = "trained_models/coral_classifier.h5"
+    classifier_path = "trained_models/coral_classifier.pkl"
     
     st.markdown("**YOLO Model:**")
     if os.path.exists(yolo_path):
@@ -141,7 +142,14 @@ def check_model_status():
     
     st.markdown("**Classifier Model:**")
     if os.path.exists(classifier_path):
-        st.success("✅ Trained")
+        st.success("✅ Trained (Random Forest)")
+        # Show dataset info if available
+        if os.path.exists("data/dataset_info.json"):
+            import json
+            with open("data/dataset_info.json", "r") as f:
+                dataset_info = json.load(f)
+            st.text(f"Dataset: {dataset_info['classification_training']['total_images']} images")
+            st.text(f"Types: {len(dataset_info['coral_types'])} coral species")
     else:
         st.warning("❌ Not trained")
 

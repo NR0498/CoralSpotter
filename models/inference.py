@@ -1,7 +1,6 @@
 import os
 import numpy as np
 import cv2
-import keras
 import json
 
 # Try to import ultralytics, fallback to basic implementation if not available
@@ -13,10 +12,23 @@ except ImportError:
     import subprocess
     import sys
 
+# Import simple classifier and detector
+try:
+    from models.simple_classifier import SimpleCoralClassifier
+    CLASSIFIER_AVAILABLE = True
+except ImportError:
+    CLASSIFIER_AVAILABLE = False
+
+try:
+    from models.simple_yolo import SimpleCoralDetector
+    SIMPLE_DETECTOR_AVAILABLE = True
+except ImportError:
+    SIMPLE_DETECTOR_AVAILABLE = False
+
 class CoralDetectionInference:
     def __init__(self):
         self.yolo_model_path = "trained_models/coral_yolo.pt"
-        self.classifier_model_path = "trained_models/coral_classifier.h5"
+        self.classifier_model_path = "trained_models/coral_classifier.pkl"
         self.label_encoder_path = "trained_models/coral_labels.json"
         
         self.yolo_model = None
@@ -43,12 +55,21 @@ class CoralDetectionInference:
                     except:
                         print("YOLO model found but ultralytics not available")
             else:
-                print("YOLO model not found. Please train the model first.")
+                # Use simple detector as fallback
+                if SIMPLE_DETECTOR_AVAILABLE:
+                    self.yolo_model = SimpleCoralDetector()
+                    print("Using simple coral detector (demo mode)")
+                else:
+                    print("No coral detection model available")
             
             # Load classification model
-            if os.path.exists(self.classifier_model_path):
-                self.classifier_model = keras.models.load_model(self.classifier_model_path)
-                print("Classification model loaded successfully")
+            if os.path.exists(self.classifier_model_path) and CLASSIFIER_AVAILABLE:
+                self.classifier_model = SimpleCoralClassifier()
+                if self.classifier_model.load_model():
+                    print("Classification model loaded successfully")
+                else:
+                    print("Failed to load classification model")
+                    self.classifier_model = None
             else:
                 print("Classification model not found. Please train the model first.")
             
@@ -95,24 +116,13 @@ class CoralDetectionInference:
             return []
     
     def classify_coral(self, image_crop):
-        """Classify coral type using CNN model"""
-        if self.classifier_model is None or self.label_mapping is None:
+        """Classify coral type using trained model"""
+        if self.classifier_model is None:
             return None, 0.0
         
         try:
-            # Preprocess image crop for classification
-            img_resized = cv2.resize(image_crop, (224, 224))
-            img_normalized = img_resized.astype(np.float32) / 255.0
-            img_batch = np.expand_dims(img_normalized, axis=0)
-            
-            # Run classification
-            predictions = self.classifier_model.predict(img_batch, verbose=0)
-            predicted_class_idx = np.argmax(predictions[0])
-            confidence = float(predictions[0][predicted_class_idx])
-            
-            # Get class name
-            coral_type = self.label_mapping.get(predicted_class_idx, "Unknown")
-            
+            # Use the simple classifier's predict method
+            coral_type, confidence = self.classifier_model.predict(image_crop)
             return coral_type, confidence
             
         except Exception as e:

@@ -1,0 +1,8 @@
+{
+  "model_type": "YOLOv8_demo",
+  "trained_on": "synthetic_coral_dataset",
+  "classes": [
+    "coral"
+  ],
+  "note": "This is a demo model for interface testing"
+}

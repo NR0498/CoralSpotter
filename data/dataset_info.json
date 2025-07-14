@@ -1,0 +1,31 @@
+{
+  "dataset_name": "Coral Reef Detection Dataset",
+  "description": "Synthetic coral reef images for detection and classification training",
+  "created_by": "Coral Reef AI System",
+  "total_images": 130,
+  "coral_types": [
+    "brain_coral",
+    "staghorn_coral",
+    "table_coral",
+    "soft_coral",
+    "fan_coral",
+    "mushroom_coral"
+  ],
+  "yolo_training": {
+    "total_images": 40,
+    "training_images": 32,
+    "validation_images": 8,
+    "annotations": 40
+  },
+  "classification_training": {
+    "total_images": 90,
+    "coral_types": {
+      "brain_coral": 15,
+      "staghorn_coral": 15,
+      "table_coral": 15,
+      "soft_coral": 15,
+      "fan_coral": 15,
+      "mushroom_coral": 15
+    }
+  }
+}
