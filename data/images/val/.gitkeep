@@ -1,0 +1,2 @@
+# This file ensures the validation images directory is tracked by git
+# Validation images will be automatically split from training data

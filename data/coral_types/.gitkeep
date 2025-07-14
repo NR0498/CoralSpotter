@@ -1,0 +1,7 @@
+# This file ensures the coral_types directory is tracked by git
+# Create subdirectories for each coral species:
+# - brain_coral/
+# - staghorn_coral/
+# - table_coral/
+# - soft_coral/
+# etc.

@@ -1,0 +1,5 @@
+# This file ensures the trained_models directory is tracked by git
+# Trained models will be saved here:
+# - coral_yolo.pt (YOLO detection model)
+# - coral_classifier.h5 (TensorFlow classification model)
+# - coral_labels.json (Label mapping for classification)
